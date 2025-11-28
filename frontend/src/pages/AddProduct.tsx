@@ -13,9 +13,14 @@ export default function AddProduct() {
     image_url: '',
     external_link: '',
     description: '',
+    condition: 'Near Mint',
+    language: 'Italiano',
+    edition: '',
+    owned_quantity: 0,
   });
   const [initialPrice, setInitialPrice] = useState('');
   const [priceSource, setPriceSource] = useState('');
+  const [priceCondition, setPriceCondition] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,6 +34,7 @@ export default function AddProduct() {
         await api.addPrice(product.id, {
           price: parseFloat(initialPrice),
           source: priceSource || undefined,
+          condition: priceCondition || undefined,
         });
       }
 
@@ -42,9 +48,10 @@ export default function AddProduct() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const value = e.target.type === 'number' ? parseInt(e.target.value) || 0 : e.target.value;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: value,
     });
   };
 
@@ -94,6 +101,27 @@ export default function AddProduct() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
+              Condizione *
+            </label>
+            <select
+              name="condition"
+              value={formData.condition}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pokemon-red focus:border-transparent"
+            >
+              <option value="Mint">Mint (M)</option>
+              <option value="Near Mint">Near Mint (NM)</option>
+              <option value="Excellent">Excellent (EX)</option>
+              <option value="Good">Good (GD)</option>
+              <option value="Light Played">Light Played (LP)</option>
+              <option value="Played">Played (PL)</option>
+              <option value="Poor">Poor (PO)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Nome Set
             </label>
             <input
@@ -131,6 +159,56 @@ export default function AddProduct() {
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pokemon-red focus:border-transparent"
               placeholder="es. 123/456"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Lingua *
+            </label>
+            <select
+              name="language"
+              value={formData.language}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pokemon-red focus:border-transparent"
+            >
+              <option value="Italiano">Italiano</option>
+              <option value="Inglese">Inglese</option>
+              <option value="Giapponese">Giapponese</option>
+              <option value="Francese">Francese</option>
+              <option value="Tedesco">Tedesco</option>
+              <option value="Spagnolo">Spagnolo</option>
+              <option value="Coreano">Coreano</option>
+              <option value="Cinese">Cinese</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Edizione
+            </label>
+            <input
+              type="text"
+              name="edition"
+              value={formData.edition}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pokemon-red focus:border-transparent"
+              placeholder="es. 1st Edition, Unlimited..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Quantità Posseduta
+            </label>
+            <input
+              type="number"
+              name="owned_quantity"
+              value={formData.owned_quantity}
+              onChange={handleChange}
+              min="0"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pokemon-red focus:border-transparent"
             />
           </div>
 
@@ -179,7 +257,7 @@ export default function AddProduct() {
 
         <div className="border-t border-gray-200 pt-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Prezzo Iniziale (Opzionale)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Prezzo (€)
@@ -204,6 +282,25 @@ export default function AddProduct() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pokemon-red focus:border-transparent"
                 placeholder="es. CardMarket"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Condizione Prezzo
+              </label>
+              <select
+                value={priceCondition}
+                onChange={(e) => setPriceCondition(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pokemon-red focus:border-transparent"
+              >
+                <option value="">-- Seleziona --</option>
+                <option value="Mint">Mint</option>
+                <option value="Near Mint">Near Mint</option>
+                <option value="Excellent">Excellent</option>
+                <option value="Good">Good</option>
+                <option value="Light Played">Light Played</option>
+                <option value="Played">Played</option>
+                <option value="Poor">Poor</option>
+              </select>
             </div>
           </div>
         </div>

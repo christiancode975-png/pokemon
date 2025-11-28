@@ -4,6 +4,9 @@ import { api } from '../api';
 import { Product } from '../types';
 import { format, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
+import PriceTrend from '../components/PriceTrend';
+import CollectionDashboard from '../components/CollectionDashboard';
+import { exportToCSV } from '../utils/exportCSV';
 
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,6 +30,10 @@ export default function ProductList() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleExport = () => {
+    exportToCSV(products);
   };
 
   const filteredProducts = products.filter(p =>
@@ -53,15 +60,27 @@ export default function ProductList() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Prodotti Pokemon</h1>
-        <input
-          type="text"
-          placeholder="Cerca prodotti..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="w-full md:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pokemon-red focus:border-transparent"
-        />
+      <CollectionDashboard />
+
+      <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Prodotti Pokemon</h1>
+          <input
+            type="text"
+            placeholder="Cerca prodotti..."
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="w-full md:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pokemon-red focus:border-transparent"
+          />
+        </div>
+        {products.length > 0 && (
+          <button
+            onClick={handleExport}
+            className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center gap-2"
+          >
+            📊 Esporta CSV
+          </button>
+        )}
       </div>
 
       {filteredProducts.length === 0 ? (
@@ -84,8 +103,13 @@ export default function ProductList() {
             <Link
               key={product.id}
               to={`/products/${product.id}`}
-              className="bg-white rounded-lg shadow hover:shadow-xl transition-shadow overflow-hidden"
+              className="bg-white rounded-lg shadow hover:shadow-xl transition-shadow overflow-hidden relative"
             >
+              {product.is_watched === 1 && (
+                <div className="absolute top-2 right-2 z-10 bg-yellow-400 text-yellow-900 rounded-full p-2 shadow-lg">
+                  ⭐
+                </div>
+              )}
               {product.image_url ? (
                 <img
                   src={product.image_url}
@@ -110,18 +134,32 @@ export default function ProductList() {
                   {product.card_number && (
                     <p><span className="font-semibold">Numero:</span> {product.card_number}</p>
                   )}
+                  {product.condition && (
+                    <p><span className="font-semibold">Condizione:</span> {product.condition}</p>
+                  )}
+                  {product.language && (
+                    <p><span className="font-semibold">Lingua:</span> {product.language}</p>
+                  )}
                 </div>
                 {product.latest_price !== undefined && product.latest_price !== null && (
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <p className="text-sm text-gray-600">Ultimo prezzo</p>
-                    <p className="text-2xl font-bold text-pokemon-red">
-                      €{product.latest_price.toFixed(2)}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-2xl font-bold text-pokemon-red">
+                        €{product.latest_price.toFixed(2)}
+                      </p>
+                      <PriceTrend trend={product.price_trend} size="lg" />
+                    </div>
                     {product.latest_price_date && (
                       <p className="text-xs text-gray-500">
                         {format(parseISO(product.latest_price_date), 'dd/MM/yyyy HH:mm', { locale: it })}
                       </p>
                     )}
+                  </div>
+                )}
+                {product.has_alert && (
+                  <div className="mt-2 flex items-center gap-1 text-sm text-green-600 font-semibold">
+                    🔔 Alert attivo
                   </div>
                 )}
               </div>
