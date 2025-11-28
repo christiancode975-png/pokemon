@@ -16,18 +16,24 @@ export default function Layout({ children }: LayoutProps) {
                 Pokemon Price Tracker
               </Link>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-2 md:gap-4">
               <Link
                 to="/"
-                className="px-4 py-2 rounded hover:bg-red-700 transition-colors"
+                className="px-3 md:px-4 py-2 rounded hover:bg-red-700 transition-colors"
               >
                 Prodotti
               </Link>
               <Link
-                to="/add-product"
-                className="px-4 py-2 bg-pokemon-yellow text-pokemon-red rounded font-semibold hover:bg-yellow-400 transition-colors"
+                to="/watchlist"
+                className="px-3 md:px-4 py-2 rounded hover:bg-red-700 transition-colors flex items-center gap-1"
               >
-                + Aggiungi Prodotto
+                ⭐ Watchlist
+              </Link>
+              <Link
+                to="/add-product"
+                className="px-3 md:px-4 py-2 bg-pokemon-yellow text-pokemon-red rounded font-semibold hover:bg-yellow-400 transition-colors"
+              >
+                + Aggiungi
               </Link>
             </div>
           </div>

@@ -19,6 +19,11 @@ export const initDatabase = async () => {
       image_url TEXT,
       external_link TEXT,
       description TEXT,
+      condition TEXT DEFAULT 'Near Mint',
+      language TEXT DEFAULT 'Italiano',
+      edition TEXT,
+      is_watched INTEGER DEFAULT 0,
+      owned_quantity INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
@@ -30,7 +35,31 @@ export const initDatabase = async () => {
       price REAL NOT NULL,
       currency TEXT DEFAULT 'EUR',
       source TEXT,
+      condition TEXT,
       recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    )
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS price_alerts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER NOT NULL,
+      target_price REAL NOT NULL,
+      alert_type TEXT DEFAULT 'below',
+      is_active INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    )
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS user_notes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER NOT NULL,
+      note TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
     )
   `);
@@ -43,6 +72,16 @@ export const initDatabase = async () => {
   await run(`
     CREATE INDEX IF NOT EXISTS idx_price_history_recorded_at
     ON price_history(recorded_at)
+  `);
+
+  await run(`
+    CREATE INDEX IF NOT EXISTS idx_products_is_watched
+    ON products(is_watched)
+  `);
+
+  await run(`
+    CREATE INDEX IF NOT EXISTS idx_price_alerts_product_id
+    ON price_alerts(product_id)
   `);
 
   console.log('Database initialized successfully');

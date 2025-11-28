@@ -181,4 +181,151 @@ router.get('/:id/statistics', async (req: Request, res: Response) => {
   }
 });
 
+// Toggle watchlist
+router.post('/:id/watchlist', async (req: Request, res: Response) => {
+  try {
+    const productId = parseInt(req.params.id);
+    const product = await ProductModel.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    await ProductModel.toggleWatchlist(productId);
+    res.json({ message: 'Watchlist updated' });
+  } catch (error) {
+    console.error('Error toggling watchlist:', error);
+    res.status(500).json({ error: 'Failed to toggle watchlist' });
+  }
+});
+
+// Get watchlist
+router.get('/watchlist/all', async (req: Request, res: Response) => {
+  try {
+    const products = await ProductModel.getWatchlist();
+    res.json(products);
+  } catch (error) {
+    console.error('Error fetching watchlist:', error);
+    res.status(500).json({ error: 'Failed to fetch watchlist' });
+  }
+});
+
+// Add price alert
+router.post(
+  '/:id/alerts',
+  [
+    body('target_price').isFloat({ min: 0 }).withMessage('Target price must be positive'),
+    body('alert_type').optional().isIn(['below', 'above']).withMessage('Invalid alert type'),
+  ],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const productId = parseInt(req.params.id);
+      const product = await ProductModel.findById(productId);
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+
+      const alertId = await ProductModel.addPriceAlert({
+        product_id: productId,
+        target_price: req.body.target_price,
+        alert_type: req.body.alert_type,
+      });
+
+      res.status(201).json({ id: alertId, message: 'Alert created' });
+    } catch (error) {
+      console.error('Error creating alert:', error);
+      res.status(500).json({ error: 'Failed to create alert' });
+    }
+  }
+);
+
+// Get price alerts
+router.get('/:id/alerts', async (req: Request, res: Response) => {
+  try {
+    const productId = parseInt(req.params.id);
+    const alerts = await ProductModel.getPriceAlerts(productId);
+    res.json(alerts);
+  } catch (error) {
+    console.error('Error fetching alerts:', error);
+    res.status(500).json({ error: 'Failed to fetch alerts' });
+  }
+});
+
+// Delete price alert
+router.delete('/alerts/:alertId', async (req: Request, res: Response) => {
+  try {
+    const alertId = parseInt(req.params.alertId);
+    await ProductModel.deletePriceAlert(alertId);
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting alert:', error);
+    res.status(500).json({ error: 'Failed to delete alert' });
+  }
+});
+
+// Add/Update note
+router.post(
+  '/:id/note',
+  [body('note').notEmpty().trim().withMessage('Note cannot be empty')],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const productId = parseInt(req.params.id);
+      const product = await ProductModel.findById(productId);
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+
+      await ProductModel.addNote(productId, req.body.note);
+      res.json({ message: 'Note saved' });
+    } catch (error) {
+      console.error('Error saving note:', error);
+      res.status(500).json({ error: 'Failed to save note' });
+    }
+  }
+);
+
+// Get note
+router.get('/:id/note', async (req: Request, res: Response) => {
+  try {
+    const productId = parseInt(req.params.id);
+    const note = await ProductModel.getNote(productId);
+    res.json(note || { note: '' });
+  } catch (error) {
+    console.error('Error fetching note:', error);
+    res.status(500).json({ error: 'Failed to fetch note' });
+  }
+});
+
+// Delete note
+router.delete('/:id/note', async (req: Request, res: Response) => {
+  try {
+    const productId = parseInt(req.params.id);
+    await ProductModel.deleteNote(productId);
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting note:', error);
+    res.status(500).json({ error: 'Failed to delete note' });
+  }
+});
+
+// Get collection value
+router.get('/collection/value', async (req: Request, res: Response) => {
+  try {
+    const value = await ProductModel.getCollectionValue();
+    res.json(value);
+  } catch (error) {
+    console.error('Error fetching collection value:', error);
+    res.status(500).json({ error: 'Failed to fetch collection value' });
+  }
+});
+
 export default router;
